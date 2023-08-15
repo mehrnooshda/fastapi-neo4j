@@ -1,4 +1,3 @@
-print("hello")
 from fastapi import  FastAPI
 from app.graph import crud
 app = FastAPI(title='Graph-Based Calculation Microservice',

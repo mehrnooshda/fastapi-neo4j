@@ -12,7 +12,6 @@ class Relationship(BaseModel):
 
 # Node response models
 class Node(BaseModel):
-    id: int
     label: str
     properties: dict
 

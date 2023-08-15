@@ -13,30 +13,25 @@ def retrieve_node(node_id: int):
     cypher = """
     MATCH (node) 
     WHERE ID(node) = $node_id
-    return ID(node) as id, LABEL(node) as label, node
+    return id(node) as id, labels(node) as label, properties(node) as properties
     """
-
     with neo4j_driver.session() as session:
         result = session.run(query=cypher,
                              parameters={'node_id': node_id})
 
-        if not result or result is None:
+        result_data = result.data()
+        if not result_data or result_data is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Node not found.")
-
-        node_data = result.data()[0]
+        node_data = result_data[0]
 
     return Node(node_id=node_data['id'],
-                labels=node_data['label'],
-                properties=node_data['node'])
-def write_data(res):
-    record = res.single()
-    value = record.value()
-    info = res.consume()
-    return value, info
+                label=node_data['label'][0],
+                properties=node_data['properties'])
 
-@router.post('/create_node', response_model=Node)
+
+@router.post('/node', response_model=Node)
 def create_node(label: str, node_attributes: dict):
     print(node_attributes.items(), "node_attributes")
     unpacked_attributes = ', '.join(f'new_node.{key} = \'{value}\'' for (key, value) in node_attributes.items())
@@ -55,28 +50,15 @@ def create_node(label: str, node_attributes: dict):
                 'attributes': node_attributes
             },
         )
-    # mmm = [dict(i) for i in result1]
-    lll = list(result1)
-    print('result1', lll)
-    print('........', '\n')
-    for record in result1:
-        print('1')
-        print(record)
+        node_data = result1.data()[0]
+        print('node_data', node_data)
+        print("Node Data:", node_data['new_node'])
+        print("Labels:", node_data['labels'])
+        print("Node ID:", node_data['id'])
 
-        # Access data from the record using keys or indices
-        # node_data = record.get("new_node")  # Assuming "new_node" is a key in your query result
-        # labels = record.get("labels")
-        # node_id = record.get("id")
-        #
-        # print("Node Data:", node_data)
-        # print("Labels:", labels)
-        # print("Node ID:", node_id)
-
-
-    node_data = result1.data()[0]
 
     return Node(node_id=node_data['id'],
-                label=node_data['label'],
+                label=node_data['labels'],
                 properties=node_data['new_node'])
 
 

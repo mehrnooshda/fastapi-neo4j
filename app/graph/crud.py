@@ -33,14 +33,12 @@ def retrieve_node(node_id: int):
 
 @router.post('/node', response_model=Node)
 def create_node(label: str, node_attributes: dict):
-    print(node_attributes.items(), "node_attributes")
     unpacked_attributes = ', '.join(f'new_node.{key} = \'{value}\'' for (key, value) in node_attributes.items())
-    print("unpacked_attributes", unpacked_attributes)
     cypher = f"""
             CREATE (new_node:{label})
             SET {unpacked_attributes}
             RETURN new_node,
-             LABELS(new_node) as labels, ID(new_node) as id
+             LABELS(new_node) as label, ID(new_node) as id,  properties(new_node) as properties
             """
 
     with neo4j_driver.session() as session:
@@ -51,14 +49,14 @@ def create_node(label: str, node_attributes: dict):
             },
         )
         node_data = result1.data()[0]
-        print('node_data', node_data)
-        print("Node Data:", node_data['new_node'])
-        print("Labels:", node_data['labels'])
-        print("Node ID:", node_data['id'])
+        # print('node_data', node_data)
+        # print("Node Data:", node_data['new_node'])
+        # print("Labels:", node_data['label'])
+        # print("Node ID:", node_data['id'])
 
 
     return Node(node_id=node_data['id'],
-                label=node_data['labels'],
+                label=node_data['label'][0],
                 properties=node_data['new_node'])
 
 

@@ -8,11 +8,11 @@ router = APIRouter()
 relationship_types = ['sum', 'subtract', 'divide', 'multiply', 'result']
 
 
-@router.post('/calculate/{node_id}', response_model=Node)
+# @router.post('/calculate/{node_id}', response_model=Node)
 def calculate_and_store(node_id: int, background_tasks = BackgroundTasks):
     cypher = f"""
-            MATCH path=(start:User {node_id: $node_id})-[*]->(end:User) 
-            WITH start, REDUCE(first = start.value, op in COLLECT({op: TYPE(LAST(RELATIONSHIPS(path))), last: end.value}) |
+            MATCH path=(start:User node_id:{node_id})-[*]->(end:User) 
+            WITH start, REDUCE(first = start.value, op in COLLECT(op: TYPE(LAST(RELATIONSHIPS(path))), last: end.value) |
             CASE op.op
             WHEN 'ADD' THEN 1.0 * first + op.last
             WHEN 'MULTI' THEN 1.0 * first * op.last
